@@ -1,22 +1,29 @@
 package org.LeCanardNoir.Observer;
 
-public class DisplayCurrent implements IObserver, IDisplay {
+import java.util.Observable;
+import java.util.Observer;
+
+public class DisplayCurrent implements Observer, IDisplay {
     private float temparature;
     private float humidity;
-    private ISubject subject;
+    private Observable observable;
 
-    public DisplayCurrent(ISubject subject) {
-        this.subject = subject;
-        this.subject.saveObserver(this);
+    public DisplayCurrent(Observable observable) {
+        this.observable = observable;
+        this.observable.addObserver(this);
     }
 
     public void display() {
         System.out.println("Condition actuelle: " + temparature + " Degré C\nHumidité: " + humidity + "%\n");
     }
 
-    public void update(float temp, float humidity, float pression) {
-        this.temparature = temp;
-        this.humidity = humidity;
-        display();
+    @Override
+    public void update(Observable obs, Object arg) {
+        if(obs instanceof MeteoData){
+            MeteoData data = (MeteoData) obs;
+            this.temparature = data.getTemperature();
+            this.humidity = data.getHumidity();
+            display();
+        }
     }
 }

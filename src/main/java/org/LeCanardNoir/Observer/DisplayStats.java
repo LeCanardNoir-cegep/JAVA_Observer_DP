@@ -1,47 +1,44 @@
 package org.LeCanardNoir.Observer;
 
-import java.util.ArrayList;
+import org.jetbrains.annotations.NotNull;
 
-public class DisplayStats implements IObserver, IDisplay{
+import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
+
+public class DisplayStats implements Observer, IDisplay{
     private ArrayList<Float> temperature;
     private ArrayList<Float> humidity;
     private ArrayList<Float> pression;
-    private ISubject subject;
+    private Observable observable;
 
-    public DisplayStats(ISubject subject) {
-        this.temperature = new ArrayList<Float>();
-        this.humidity = new ArrayList<Float>();
-        this.pression = new ArrayList<Float>();
+    public DisplayStats(Observable observable) {
+        this.temperature = new ArrayList<>();
+        this.humidity = new ArrayList<>();
+        this.pression = new ArrayList<>();
 
-        this.subject = subject;
-        this.subject.saveObserver(this);
+        this.observable = observable;
+        this.observable.addObserver(this);
     }
 
     public void display() {
-        float t = average(temperature);
-        float h = average(humidity);
-        float p = average(pression);
+        float t = average(this.temperature);
+        float h = average(this.humidity);
+        float p = average(this.pression);
         System.out.println("Moyenne: " + t + " Degré C\tHumidité: " + h + "%\tPression: " + p);
 
-        t = minimum(temperature);
-        h = minimum(humidity);
-        p = minimum(pression);
+        t = minimum(this.temperature);
+        h = minimum(this.humidity);
+        p = minimum(this.pression);
         System.out.println("Minimum: " + t + " Degré C\tHumidité: " + h + "%\tPression: " + p);
 
-        t = maximum(temperature);
-        h = maximum(humidity);
-        p = maximum(pression);
+        t = maximum(this.temperature);
+        h = maximum(this.humidity);
+        p = maximum(this.pression);
         System.out.println("Minimum: " + t + " Degré C\tHumidité: " + h + "%\tPression: " + p + "\n");
     }
 
-    public void update(float temp, float humidity, float pression) {
-        this.temperature.add(temp);
-        this.humidity.add(humidity);
-        this.pression.add(pression);
-        display();
-    }
-
-    private float average(ArrayList<Float> data){
+    private float average(@NotNull ArrayList<Float> data){
         float a = 0;
         int l = data.size();
         for (float d: data) {
@@ -50,11 +47,22 @@ public class DisplayStats implements IObserver, IDisplay{
         return a/l;
     }
 
-    private float minimum(ArrayList<Float> data){
+    private float minimum(@NotNull ArrayList<Float> data){
         return data.stream().min(Float::compare).get();
     }
 
-    private float maximum(ArrayList<Float> data){
+    private float maximum(@NotNull ArrayList<Float> data){
         return data.stream().max(Float::compare).get();
+    }
+
+    @Override
+    public void update(Observable obs, Object arg) {
+        if(obs instanceof MeteoData){
+            MeteoData data = (MeteoData) obs;
+            this.temperature.add(data.getTemperature());
+            this.humidity.add(data.getHumidity());
+            this.pression.add(data.getPression());
+            display();
+        }
     }
 }
